@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+   <meta charset="UTF-8">
+   <title>COMP484 - Calculator</title>
+   <script>
+      var memoryNum = null,
+         op = null,
+         clearOnNextClick = false;
+
+      function valueIsNumeric(s) {
+         'use strict';
+         return !isNaN(s);
+      }
+
+      function submitForm() {
+         function validateFormInputs() {
+            'use strict';
+            var firstName = document.forms.calculatorForm.firstName.value,
+               lastName = document.forms.calculatorForm.lastName.value,
+               idNumber = document.forms.calculatorForm.idNumber.value,
+               biography = document.forms.calculatorForm.biography.value,
+               resultField,
+               errorLog = '',
+               valid = true;
+
+            function countNumberOfWords(paragraph) {
+               var i,
+                  countWords = 0;
+               if (paragraph[0] !== ' ') {
+                  countWords = 1;
+               }
+               for (i = 1; i < paragraph.length - 1; i += 1) {
+                  if (paragraph[i] === ' ' && paragraph[i + 1] !== ' ') {
+                     countWords += 1;
+                     i += 1;
+                  }
+               }
+               return countWords;
+            }
+
+            if (firstName.charAt(0).toUpperCase() !== firstName.charAt(0)) {
+               errorLog += 'First name must be capitalized\n';
+               valid = false;
+            }
+
+            if (lastName.charAt(0).toUpperCase() !== lastName.charAt(0)) {
+               errorLog += 'Last name must be capitalized\n';
+               valid = false;
+            }
+
+            if (idNumber.length !== 9 || !valueIsNumeric(idNumber)) {
+               errorLog += 'Your ID must be 9 digits, only numbers\n';
+               valid = false;
+            }
+
+            if (countNumberOfWords(biography) > 25) {
+               errorLog += 'Biography can only be up to 25 words.\n';
+               valid = false;
+            }
+
+            function hoursWorked() {
+               var content = document.getElementById('hours').innerHTML;
+               if (content === '' ||
+                  content === 'This is not a valid number of hours worked.') {
+                  return '';
+               } else {
+                  return '\nHours worked this week:\n' + content;
+               }
+            }
+
+            function resetDefaultBeforeChecking() {
+               document.body.style.backgroundColor = "beige";
+               document.getElementById('errorLog').style.visibility = 'hidden';
+            }
+
+            resetDefaultBeforeChecking();
+
+            if (valid) {
+               var alertText = 'Form submission success!\n' +
+                  '\nFirstName: ' + firstName +
+                  '\nLastName: ' + lastName +
+                  '\nID: ' + idNumber +
+                  '\nBio: ' + biography +
+                  hoursWorked();
+               alert(alertText);
+
+            } else {
+               document.body.style.backgroundColor = "#ECF59F";
+               document.getElementById('errorLog').innerHTML = errorLog;
+               document.getElementById('errorLog').style.visibility = 'visible';
+            }
+         }
+
+         validateFormInputs();
+      }
+
+      function displayError() {
+         'use strict';
+         document.getElementsByName('result')[0].value = 'ERROR: press C';
+      }
+
+      function storeValue() {
+         'use strict';
+         if (!clearOnNextClick) {
+            clearOnNextClick = true;
+            memoryNum = document.getElementsByName('result')[0].value;
+         }
+      }
+
+      //Checks if number is pressed prior when using calculator
+      function checkFirstOperation() {
+         'use strict';
+         if (memoryNum === null) {
+            return true;
+         }
+         return false;
+      }
+
+      //'Operator' buttons press event
+      function operate(operator) {
+         'use strict';
+         if (valueIsNumeric(document.getElementsByName('result')[0].value)) {
+            op = operator;
+            clearOnNextClick = true;
+         } else {
+            displayError();
+         }
+      }
+
+      //'Clear' button press event
+      function clearData() {
+         'use strict';
+         document.getElementsByName('result')[0].value = null;
+         op = null;
+         memoryNum = null;
+      }
+
+      //'Equal' button press event
+      function equals() {
+         'use strict';
+
+         function runEquals() {
+            var val = parseInt(document.getElementsByName('result')[0].value, 10);
+            if (op === 'a') {
+               val += memoryNum;
+            } else if (op === 's') {
+               val = memoryNum - val;
+            } else if (op === 'm') {
+               val *= memoryNum;
+            } else if (op === 'd') {
+               val = memoryNum / val;
+            } else {
+               op = null;
+            }
+            document.getElementsByName('result')[0].value = val;
+         }
+
+         if (valueIsNumeric(document.getElementsByName('result')[0].value)) {
+            runEquals();
+         } else {
+            displayError();
+         }
+      }
+
+      //'Digits' button press event
+      function numP(val) {
+         'use strict';
+
+         function runNumP() {
+            if (clearOnNextClick) {
+               memoryNum = parseInt(document.getElementsByName('result')[0].value, 10);
+               document.getElementsByName('result')[0].value = null;
+               clearOnNextClick = false;
+            }
+            document.getElementsByName('result')[0].value += val;
+         }
+
+         if (valueIsNumeric(document.getElementsByName('result')[0].value)) {
+            runNumP();
+         } else {
+            displayError();
+         }
+      }
+
+      //'Save' button press event
+      function storeData() {
+         'use strict';
+         var error = 'This is not a valid number of hours worked.',
+            valueToAdd = document.getElementsByName('result')[0].value;
+
+         function clearError() {
+            if (document.getElementById('hours').innerHTML === error) {
+               document.getElementById("hours").style.color = "black";
+               document.getElementById('hours').innerHTML = null;
+            }
+         }
+
+         function displayStoredData() {
+            if (valueIsNumeric(valueToAdd) && valueToAdd !== null && valueToAdd !== '') {
+               document.getElementById('hours').innerHTML += valueToAdd + ', ';
+            } else {
+               document.getElementsByName('result')[0].value = null;
+               document.getElementById("hours").style.color = "red";
+               document.getElementById('hours').innerHTML = error;
+            }
+         }
+
+         clearError();
+         displayStoredData();
+
+      }
+
+   </script>
+
+   <style>
+      .calcButtons {
+         width: 35px;
+         height: 35px;
+         margin: 3px;
+      }
+      body {
+         background: beige;
+         text-align: center;
+      }
+      .calcButtonsOP {
+         width: 35px;
+         height: 35px;
+         margin: 3px;
+         background-color: deepskyblue;
+      }
+      .colms {
+         display: inline-block;
+         vertical-align: top;
+      }
+      #errorLog {
+         visibility: hidden;
+         background-color: lightcoral;
+         font-weight: bold;
+         margin: 1vh;
+      }
+   </style>
+
+</head>
+
+<body>
+   <h3>COMP 484 - Lab 2 - Chris Tufenkjian - November 4th, 2015</h3>
+   <div class="colms">
+      <form name="calculatorForm" onSubmit="event.preventDefault(); submitForm()">
+         First name
+         <br>
+         <input type="text" name="firstName">
+         <br>
+         <br> Last name
+         <br>
+         <input type="text" name="lastName">
+         <br>
+         <br> Id Number
+         <br>
+         <input type="text" name="idNumber">
+         <br>
+         <br>Biography
+         <br>
+         <textarea name="biography" rows="8" cols="50"></textarea>
+         <br>
+         <input type="submit" value="Submit" id="formSubmit">
+      </form>
+   </div>
+
+   <div class="colms">
+      <input class="calcButtonsOP" onclick="operate('a')" type="button" name="plus" value="+">
+      <input class="calcButtons" onclick="numP(this.value)" type="button" name="one" value="1">
+      <input class="calcButtons" onclick="numP(this.value)" type="button" name="two" value="2">
+      <input class="calcButtons" onclick="numP(this.value)" type="button" name="three" value="3">
+      <br>
+      <input class="calcButtonsOP" onclick="operate('s')" type="button" name="minus" value="-">
+      <input class="calcButtons" onclick="numP(this.value)" type="button" name="four" value="4">
+      <input class="calcButtons" onclick="numP(this.value)" type="button" name="five" value="5">
+      <input class="calcButtons" onclick="numP(this.value)" type="button" name="six" value="6">
+      <br>
+      <input class="calcButtonsOP" onclick="operate('m')" type="button" name="mult" value="X">
+      <input class="calcButtons" onclick="numP(this.value)" type="button" name="seven" value="7">
+      <input class="calcButtons" onclick="numP(this.value)" type="button" name="eight" value="8">
+      <input class="calcButtons" onclick="numP(this.value)" type="button" name="nine" value="9">
+      <br>
+      <input class="calcButtonsOP" onclick="operate('d')" type="button" name="divide" value="/">
+      <input class="calcButtons" onclick="clearData()" type="button" name="C" value="C">
+      <input class="calcButtons" onclick="numP(this.value)" type="button" name="zero" value="0">
+      <input class="calcButtons" onclick="equals()" type="button" name="equal" value="=">
+      <br>
+      <br>
+      <textarea name="result" rows="1" cols="20"></textarea>
+      <br>
+      <input type="button" onclick="storeData()" value="Save">
+      <br>
+      <br>
+      <span>Hours worked this week:</span>
+      <br>
+      <span id="hours"></span>
+      <div id="errorLog"></div>
+   </div>
+
+</body>
+
+</html>
